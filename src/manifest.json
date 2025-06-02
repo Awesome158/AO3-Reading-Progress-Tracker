@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "AO3 Reading Progress Tracker",
+  "version": "1.0.0",
+  "description": "Track your reading progress on Archive of Our Own",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "downloads",
+    "alarms",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://archiveofourown.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://archiveofourown.org/*"],
+      "js": ["utils/storage-v2.js", "utils/bookmark-sync.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "AO3 Reading Progress Tracker",
+    "default_popup": "popup/popup.html"
+  },
+  "options_page": "settings/settings.html",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "42": "icons/icon-42.png",
+    "128": "icons/icon-128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["utils/storage-v2.js", "utils/bookmark-sync.js"],
+      "matches": ["https://archiveofourown.org/*"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  }
+}

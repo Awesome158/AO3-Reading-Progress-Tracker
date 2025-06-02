@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AO3 Reading Progress Tracker</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="header">
+        <h1>AO3 Progress Tracker</h1>
+        <div class="subtitle">Track your reading journey</div>
+    </div>
+
+    <div class="content">
+        <!-- Progress Overview -->
+        <div class="progress-overview" id="progressOverview" style="display: none;">
+            <div class="stats-title">Overall Progress</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="overallProgress" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progressText">0% of tracked works completed</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stats-title">Reading Statistics</div>
+            <div class="stat-row">
+                <span class="stat-label">Works tracked:</span>
+                <span class="stat-value" id="totalWorks">
+                    <span class="loading"></span>
+                </span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Completed:</span>
+                <span class="stat-value highlight" id="completedWorks">
+                    <span class="loading"></span>
+                </span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">In progress:</span>
+                <span class="stat-value" id="inProgressWorks">
+                    <span class="loading"></span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity" id="recentActivity" style="display: none;">
+            <div class="recent-activity-title">Recently Read</div>
+            <div id="recentList"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">📚</div>
+            <div class="empty-state-text">No works tracked yet</div>
+            <a href="https://archiveofourown.org" target="_blank" class="button button-primary">
+                Start Reading on AO3
+            </a>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="buttons" id="actionButtons">
+            <button id="openSettings" class="button button-primary">
+                <span class="button-icon">⚙️</span>
+                Open Settings
+            </button>
+            <button id="openLibrary" class="button button-secondary">
+                <span class="button-icon">📚</span>
+                View Library
+            </button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="quick-action" id="exportData" title="Export your reading data">
+                <span class="quick-action-icon">💾</span>
+                Export
+            </div>
+            <div class="quick-action" id="refreshData" title="Refresh statistics">
+                <span class="quick-action-icon">🔄</span>
+                Refresh
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <span id="trackingStatus">Tracking enabled</span>
+        •
+        <a href="#" id="toggleTracking">Toggle</a>
+    </div>
+
+    <script src="../utils/storage-v2.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "ao3-reading-progress-tracker",
+  "version": "1.0.0",
+  "description": "Build tools for AO3 Reading Progress Tracker browser extension",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "build:chrome": "node build.js chrome",
+    "build:firefox": "node build.js firefox",
+    "build:edge": "node build.js edge",
+    "build:opera": "node build.js opera",
+    "clean": "rm -rf dist/",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare-release": "npm run build && node prepare-release.js"
+  },
+  "devDependencies": {
+    "archiver": "^6.0.1",
+    "clean-css": "^5.3.3",
+    "terser": "^5.24.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

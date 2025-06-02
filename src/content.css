@@ -1,0 +1,124 @@
+/* AO3 Reading Progress Tracker - Content Styles */
+
+:root {
+  --color-background: #f5f5f5;
+  --color-foreground: #333;
+  --color-accent: #c60000;
+  --color-accent-dark: #840;
+  --color-border: #ddd;
+  --color-muted: #666;
+  --color-light: #fff;
+  --color-highlight: #4CAF50;
+  --color-highlight-dark: #45a049;
+  --color-error: #f44336;
+  --color-error-bg: #ffebee;
+  --color-success-bg: #e8f5e9;
+  --color-muted-bg: #f8f8f8;
+  --color-hover-bg: #fff5f5;
+  --shadow-light: rgba(0, 0, 0, 0.08);
+  --shadow-medium: rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1a1a1a;
+    --color-foreground: #e0e0e0;
+  --color-accent: #c60000;
+  --color-accent-dark: #840;
+    --color-border: #444;
+    --color-muted: #999;
+    --color-light: #2a2a2a;
+    --color-highlight: #4CAF50;
+    --color-highlight-dark: #45a049;
+    --color-error: #f44336;
+    --color-error-bg: #3a2a2a;
+    --color-success-bg: #2a3a2a;
+    --color-muted-bg: #333;
+    --color-hover-bg: #3a2a2a;
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+  }
+}
+
+
+dt.progress, dd.progress {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+}
+
+dt.progress {
+  font-weight: bold;
+  margin-right: 0.25em;
+}
+
+dd.progress {
+  position: relative;
+  padding: 0 0.5em;
+  margin-right: 1em;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+dd.progress:hover {
+  background-color: rgba(0, 128, 0, 0.1);
+}
+
+/* Visual progress indicator on listing pages */
+.index dd.progress {
+  min-width: 3em;
+  text-align: center;
+}
+
+/* Completed work indicator */
+dd.progress.completed {
+  color: var(--color-highlight);
+  font-weight: bold;
+}
+
+/* Progress bar effect for listing pages */
+.blurb dd.progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.blurb dd.progress::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(0, 128, 0, 0.1);
+  transition: width 0.3s ease;
+  z-index: -1;
+}
+
+/* Reading indicator */
+.reading-now {
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 2px 6px;
+  background: var(--color-error);
+  color: var(--color-light);
+  font-size: 0.8em;
+  border-radius: 3px;
+  font-weight: normal;
+}
+
+/* Chapter progress tooltip */
+dd.progress[title] {
+  cursor: help;
+}
+
+/* Settings page link in stats */
+.progress-settings-link {
+  display: inline-block;
+  margin-left: 0.5em;
+  font-size: 0.8em;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.progress-settings-link:hover {
+  opacity: 1;
+}
