@@ -1,5 +1,5 @@
 // Bookmark synchronization module for AO3 Reading Progress Tracker - Fixed Version
-(function() {
+(function () {
   'use strict';
 
   class BookmarkSync {
@@ -645,7 +645,7 @@
   window.ao3BookmarkSync = new BookmarkSync();
 
   // Testing and debugging functions
-  window.testAO3Bookmarks = async function(workId) {
+  window.testAO3Bookmarks = async function (workId) {
     if (!workId) {
       workId = window.location.pathname.match(/works\/(\d+)/)?.[1];
     }
@@ -660,20 +660,20 @@
     return result;
   };
 
-  window.enableBookmarkDebug = function() {
+  window.enableBookmarkDebug = function () {
     localStorage.setItem('ao3_debug', 'true');
     window.ao3BookmarkSync.debug = true;
     console.log('Bookmark debug mode enabled');
   };
 
-  window.disableBookmarkDebug = function() {
+  window.disableBookmarkDebug = function () {
     localStorage.removeItem('ao3_debug');
     window.ao3BookmarkSync.debug = false;
     console.log('Bookmark debug mode disabled');
   };
 
   // Manual sync trigger for testing
-  window.testBookmarkSync = async function(workId, readChapters, totalChapters, percentComplete) {
+  window.testBookmarkSync = async function (workId, readChapters, totalChapters, percentComplete) {
     if (!workId) {
       console.log('Usage: testBookmarkSync(workId, readChapters, totalChapters, percentComplete)');
       return;

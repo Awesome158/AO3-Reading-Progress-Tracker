@@ -4,11 +4,11 @@
   "description": "Build tools for AO3 Reading Progress Tracker browser extension",
   "private": true,
   "scripts": {
-    "build": "node build.js",
-    "build:chrome": "node build.js chrome",
-    "build:firefox": "node build.js firefox",
-    "build:edge": "node build.js edge",
-    "build:opera": "node build.js opera",
+    "build": "cd src && node build.js",
+    "build:chrome": "cd src && node build.js chrome",
+    "build:firefox": "cd src && node build.js firefox",
+    "build:edge": "cd src && node build.js edge",
+    "build:opera": "cd src && node build.js opera",
     "clean": "rm -rf dist/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare-release": "npm run build && node prepare-release.js"

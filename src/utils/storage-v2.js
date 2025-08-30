@@ -1,5 +1,5 @@
 // Enhanced storage utility with separate completed works storage
-(function() {
+(function () {
   'use strict';
 
   class AO3StorageV2 {
@@ -76,7 +76,7 @@
     // Decompress completed works data
     decompressCompleted(compressed) {
       if (!compressed) return [];
-      
+
       try {
         const data = JSON.parse(compressed);
 
@@ -209,7 +209,7 @@
       };
 
       work.lastUpdated = Date.now();
-      
+
       // Check if work is now completed
       const chapters = Object.values(work.chapters);
       const allChaptersRead = chapters.length > 0 && chapters.every(ch => ch.p === 100);
@@ -240,8 +240,8 @@
       // Sync with bookmarks if enabled
       this.syncBookmarkProgress(work);
     }
-    
-// Sync progress with AO3 bookmarks
+
+    // Sync progress with AO3 bookmarks
     async syncBookmarkProgress(work, currentChapterNum = null, currentChapterProgress = null) {
       if (!window.ao3BookmarkSync) {
         return; // Bookmark sync not loaded
@@ -429,7 +429,7 @@
     async importData(jsonString) {
       try {
         const data = JSON.parse(jsonString);
-        
+
         if (data.version === 2) {
           // Version 2 format
           let imported = 0;

@@ -1158,7 +1158,7 @@ function filterLibrary() {
 }
 
 // Test functions for debugging
-window.testAO3Settings = function() {
+window.testAO3Settings = function () {
   console.log('=== AO3 Settings Test ===');
   console.log('Current settings:', currentSettings);
   console.log('Works cache length:', worksCache.length);

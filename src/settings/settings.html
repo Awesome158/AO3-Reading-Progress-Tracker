@@ -1,293 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AO3 Reading Progress Tracker - Settings</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>AO3 Reading Progress Tracker Settings</h1>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AO3 Reading Progress Tracker - Settings</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AO3 Reading Progress Tracker Settings</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-button active" data-tab="general">General</button>
+      <button class="tab-button" data-tab="library">Library</button>
+    </div>
+
+    <div class="tab-panel active" id="general">
+      <h2>General Settings</h2>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="showProgress" />
+          Show reading progress on AO3 pages
+        </label>
       </div>
 
-      <div class="tabs">
-        <button class="tab-button active" data-tab="general">General</button>
-        <button class="tab-button" data-tab="library">Library</button>
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="autoDeleteCompleted" />
+          Automatically delete completed works
+        </label>
       </div>
 
-      <div class="tab-panel active" id="general">
-        <h2>General Settings</h2>
+      <div class="form-group" id="deletionTimingGroup" style="display: none">
+        <label for="deletionTiming">Delete completed works after:</label>
+        <select id="deletionTiming">
+          <option value="immediate">Immediately</option>
+          <option value="7 days" selected>7 days</option>
+          <option value="14 days">14 days</option>
+          <option value="30 days">30 days</option>
+          <option value="3 months">3 months</option>
+        </select>
+      </div>
 
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="showProgress" />
-            Show reading progress on AO3 pages
-          </label>
-        </div>
-
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="autoDeleteCompleted" />
-            Automatically delete completed works
-          </label>
-        </div>
-
-        <div class="form-group" id="deletionTimingGroup" style="display: none">
-          <label for="deletionTiming">Delete completed works after:</label>
-          <select id="deletionTiming">
-            <option value="immediate">Immediately</option>
-            <option value="7 days" selected>7 days</option>
-            <option value="14 days">14 days</option>
-            <option value="30 days">30 days</option>
-            <option value="3 months">3 months</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="scrollSensitivity">Scroll sensitivity (1-20):</label>
-          <input
-            type="range"
-            id="scrollSensitivity"
-            min="1"
-            max="20"
-            value="5"
-          />
+      <div class="form-group">
+        <label for="scrollSensitivity">Scroll sensitivity (1-20):</label>
+        <input type="range" id="scrollSensitivity" min="1" max="20" value="5" />
+        <span class="scrollValue">5</span>%
+        <p class="setting-description">
+          Saves your reading progress every
           <span class="scrollValue">5</span>%
+        </p>
+      </div>
+
+      <!-- Bookmark Sync Settings -->
+      <fieldset id="bookmarkSyncSettings">
+        <legend>Bookmark Synchronization</legend>
+
+        <div id="bookmarkSyncWarning" class="warning-box" style="display: none">
+          <p>⚠️ You must be logged in to AO3 to use bookmark synchronization</p>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="syncWithBookmarks" />
+            Sync reading progress with AO3 bookmarks
+          </label>
           <p class="setting-description">
-            Saves your reading progress every
-            <span class="scrollValue">5</span>%
+            This will add reading progress tags to your bookmarks
           </p>
         </div>
 
-        <!-- Bookmark Sync Settings -->
-        <fieldset id="bookmarkSyncSettings">
-          <legend>Bookmark Synchronization</legend>
-
-          <div id="bookmarkSyncWarning" class="warning-box" style="display: none">
-            <p>⚠️ You must be logged in to AO3 to use bookmark synchronization</p>
+        <div id="bookmarkSettings" style="display: none">
+          <div class="form-group">
+            <label for="bookmarkTagPrefix">Tag prefix:</label>
+            <input type="text" id="bookmarkTagPrefix" value="Reading Progress:" style="width: 300px" />
+            <p class="setting-description">
+              Example: "Reading Progress: 5/12 chapters (42%)"
+            </p>
           </div>
 
           <div class="form-group">
             <label>
-              <input type="checkbox" id="syncWithBookmarks" />
-              Sync reading progress with AO3 bookmarks
+              <input type="checkbox" id="bookmarkPrivate" checked />
+              Make bookmarks private by default
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="bookmarkAutoCreate" />
+              Automatically create bookmarks when starting to read
             </label>
             <p class="setting-description">
-              This will add reading progress tags to your bookmarks
+              If unchecked, progress will only sync to existing bookmarks
             </p>
           </div>
 
-          <div id="bookmarkSettings" style="display: none">
+          <!-- Advanced Settings -->
+          <details class="advanced-settings">
+            <summary>Advanced Settings</summary>
+
             <div class="form-group">
-              <label for="bookmarkTagPrefix">Tag prefix:</label>
-              <input
-                type="text"
-                id="bookmarkTagPrefix"
-                value="Reading Progress:"
-                style="width: 300px"
-              />
+              <label for="rateLimitDelay">Rate limit delay (ms):</label>
+              <input type="number" id="rateLimitDelay" value="2000" min="1000" max="10000" style="width: 100px" />
               <p class="setting-description">
-                Example: "Reading Progress: 5/12 chapters (42%)"
+                Delay between requests to AO3 (1000-10000 ms)
               </p>
             </div>
 
             <div class="form-group">
-              <label>
-                <input type="checkbox" id="bookmarkPrivate" checked />
-                Make bookmarks private by default
-              </label>
-            </div>
-
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="bookmarkAutoCreate" />
-                Automatically create bookmarks when starting to read
-              </label>
+              <label for="syncIntervals">Sync intervals (%):</label>
+              <input type="text" id="syncIntervals" value="5, 25, 50, 75, 100" style="width: 200px" />
               <p class="setting-description">
-                If unchecked, progress will only sync to existing bookmarks
+                Comma-separated percentages when to sync progress
               </p>
             </div>
 
-            <!-- Advanced Settings -->
-            <details class="advanced-settings">
-              <summary>Advanced Settings</summary>
+            <div class="form-group">
+              <button type="button" id="clearSyncedChapters" class="button button-secondary">
+                Clear Sync Tracking
+              </button>
+              <p class="setting-description">
+                Reset bookmark sync tracking data
+              </p>
+            </div>
+          </details>
 
-              <div class="form-group">
-                <label for="rateLimitDelay">Rate limit delay (ms):</label>
-                <input
-                  type="number"
-                  id="rateLimitDelay"
-                  value="2000"
-                  min="1000"
-                  max="10000"
-                  style="width: 100px"
-                />
-                <p class="setting-description">
-                  Delay between requests to AO3 (1000-10000 ms)
-                </p>
-              </div>
+        </div>
+      </fieldset>
 
-              <div class="form-group">
-                <label for="syncIntervals">Sync intervals (%):</label>
-                <input
-                  type="text"
-                  id="syncIntervals"
-                  value="5, 25, 50, 75, 100"
-                  style="width: 200px"
-                />
-                <p class="setting-description">
-                  Comma-separated percentages when to sync progress
-                </p>
-              </div>
+      <!-- Update Check Settings -->
+      <fieldset id="updateCheckSettings">
+        <legend>Chapter Update Checking</legend>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="checkForUpdates" checked />
+            Check for new chapters automatically
+          </label>
+          <p class="setting-description">
+            Automatically check if tracked works have new chapters
+          </p>
+        </div>
 
-              <div class="form-group">
-                <button
-                  type="button"
-                  id="clearSyncedChapters"
-                  class="button button-secondary"
-                >
-                  Clear Sync Tracking
-                </button>
-                <p class="setting-description">
-                  Reset bookmark sync tracking data
-                </p>
-              </div>
-            </details>
+        <div class="form-group">
+          <label for="updateCheckInterval">Check interval (hours):</label>
+          <input type="number" id="updateCheckInterval" value="24" min="1" max="168" style="width: 80px" />
+          <p class="setting-description">
+            How often to check for new chapters (1-168 hours)
+          </p>
+        </div>
 
-          </div>
-        </fieldset>
-
-        <!-- Update Check Settings -->
-        <fieldset id="updateCheckSettings">
-          <legend>Chapter Update Checking</legend>
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="checkForUpdates" checked />
-              Check for new chapters automatically
-            </label>
-            <p class="setting-description">
-              Automatically check if tracked works have new chapters
-            </p>
-          </div>
-
-          <div class="form-group">
-            <label for="updateCheckInterval">Check interval (hours):</label>
-            <input
-              type="number"
-              id="updateCheckInterval"
-              value="24"
-              min="1"
-              max="168"
-              style="width: 80px"
-            />
-            <p class="setting-description">
-              How often to check for new chapters (1-168 hours)
-            </p>
-          </div>
-
-          <div class="form-group">
-            <button
-              type="button"
-              id="testUpdateCheck"
-              class="button button-secondary"
-            >
-              Test Update Check
-            </button>
-            <p class="setting-description">
-              Test update checking for current work or library works
-            </p>
-          </div>
-        </fieldset>
-
-        <!-- Additional Settings -->
-        <fieldset id="additionalSettings">
-          <legend>Additional Settings</legend>
-
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="showDetailedProgress" checked />
-              Show detailed progress information
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="trackScrollPosition" checked />
-              Track scroll position within chapters
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="showNotifications" checked />
-              Show notifications for new chapters
-            </label>
-          </div>
-        </fieldset>
-
-        <div class="save-section">
-          <button id="saveSettings" class="button button-primary">
-            Save Settings
+        <div class="form-group">
+          <button type="button" id="testUpdateCheck" class="button button-secondary">
+            Test Update Check
           </button>
-          <div id="saveStatus" class="status-message"></div>
+          <p class="setting-description">
+            Test update checking for current work or library works
+          </p>
+        </div>
+      </fieldset>
+
+      <!-- Additional Settings -->
+      <fieldset id="additionalSettings">
+        <legend>Additional Settings</legend>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="showDetailedProgress" checked />
+            Show detailed progress information
+          </label>
         </div>
 
-        <fieldset id="dataManagement">
-          <legend>Data Management</legend>
-          <div class="form-group">
-            <button id="exportBtn" class="button button-secondary">
-              Export Data
-            </button>
-            <button id="importBtn" class="button button-secondary">
-              Import Data
-            </button>
-            <input
-              type="file"
-              id="importFile"
-              accept=".json,.ndjson"
-              style="display: none"
-            />
-            <p class="setting-description">
-              Export your reading progress data or import from a backup
-            </p>
-          </div>
-        </fieldset>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="trackScrollPosition" checked />
+            Track scroll position within chapters
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="showNotifications" checked />
+            Show notifications for new chapters
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="save-section">
+        <button id="saveSettings" class="button button-primary">
+          Save Settings
+        </button>
+        <div id="saveStatus" class="status-message"></div>
       </div>
 
-      <div class="tab-panel" id="library">
-        <h2>Your Library</h2>
-
-        <div class="library-header">
-          <div class="stats-info">
-            <span id="totalWorks">0 works tracked</span>
-            <span id="totalCompleted">0 completed</span>
-          </div>
-
-          <div class="library-view-options">
-            <label>
-              <input type="checkbox" id="showCompactView" />
-              Compact view
-            </label>
-          </div>
+      <fieldset id="dataManagement">
+        <legend>Data Management</legend>
+        <div class="form-group">
+          <button id="exportBtn" class="button button-secondary">
+            Export Data
+          </button>
+          <button id="importBtn" class="button button-secondary">
+            Import Data
+          </button>
+          <input type="file" id="importFile" accept=".json,.ndjson" style="display: none" />
+          <p class="setting-description">
+            Export your reading progress data or import from a backup
+          </p>
         </div>
-
-        <div class="library-controls">
-          <input type="text" id="searchLibrary" placeholder="Search works..." />
-          <select id="filterLibrary">
-            <option value="all">All Works</option>
-            <option value="reading">Currently Reading</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
-
-        <div id="libraryList"></div>
-      </div>
+      </fieldset>
     </div>
 
-    <script src="../utils/storage-v2.js"></script>
-    <script src="../utils/bookmark-sync.js"></script>
-    <script src="settings.js"></script>
-  </body>
+    <div class="tab-panel" id="library">
+      <h2>Your Library</h2>
+
+      <div class="library-header">
+        <div class="stats-info">
+          <span id="totalWorks">0 works tracked</span>
+          <span id="totalCompleted">0 completed</span>
+        </div>
+
+        <div class="library-view-options">
+          <label>
+            <input type="checkbox" id="showCompactView" />
+            Compact view
+          </label>
+        </div>
+      </div>
+
+      <div class="library-controls">
+        <input type="text" id="searchLibrary" placeholder="Search works..." />
+        <select id="filterLibrary">
+          <option value="all">All Works</option>
+          <option value="reading">Currently Reading</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      <div id="libraryList"></div>
+    </div>
+  </div>
+
+  <script src="../utils/storage-v2.js"></script>
+  <script src="../utils/bookmark-sync.js"></script>
+  <script src="settings.js"></script>
+</body>
+
 </html>

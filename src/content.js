@@ -1,5 +1,5 @@
 // Main content script for AO3 Reading Progress Tracker
-(function() {
+(function () {
   'use strict';
 
   // Configuration
@@ -90,7 +90,7 @@
     let timeout = null;
     let lastRun = 0;
 
-    return function(...args) {
+    return function (...args) {
       const now = Date.now();
       if (now - lastRun >= delay) {
         func.apply(this, args);
@@ -217,9 +217,10 @@
             lastParagraph,
             chapterInfo
           );
-
-          // Sync with bookmarks if enabled
-          this.syncBookmarkProgress();
+          const work = window.ao3Storage.getWork(this.currentWid);
+          if (work) {
+            this.syncBookmarkProgress(work, chapterNum, progress);
+          }
         }
       }, 1000);
 
@@ -262,8 +263,8 @@
       const navLinks = document.querySelectorAll('.chapter.navigation a[href*="/chapters/"]');
       for (const link of navLinks) {
         if (link.textContent.toLowerCase().includes('current') ||
-            link.classList.contains('current') ||
-            link.getAttribute('aria-current')) {
+          link.classList.contains('current') ||
+          link.getAttribute('aria-current')) {
           const cidMatch = link.href.match(/chapters\/(\d+)/);
           if (cidMatch) {
             return cidMatch[1];
@@ -415,12 +416,15 @@
 
               // Sync bookmarks periodically
               if (progress % 25 === 0) { // Every 25%
-                this.syncBookmarkProgress();
+                const work = window.ao3Storage.getWork(this.currentWid);
+                if (work) {
+                  this.syncBookmarkProgress(work, chapterNum, progress);
+                }
               }
             }
           });
         }, {
-          threshold: Array.from({length: 21}, (_, i) => i * 0.05),
+          threshold: Array.from({ length: 21 }, (_, i) => i * 0.05),
           rootMargin: '0px'
         });
 
@@ -923,7 +927,7 @@
   });
 
   // Manual testing helpers
-  window.testAO3Progress = function() {
+  window.testAO3Progress = function () {
     console.log('=== AO3 Progress Tracker Test ===');
     console.log('Storage ready:', window.ao3Storage?.ready);
     console.log('Current URL:', window.location.href);
@@ -956,7 +960,7 @@
   };
 
   // Test bookmark functionality
-  window.testBookmarkSync = async function() {
+  window.testBookmarkSync = async function () {
     const workId = parseWorkId(window.location.href);
     if (!workId) {
       console.log('No work ID found in current URL');
@@ -982,7 +986,7 @@
   };
 
   // Test update checking
-  window.testUpdateCheck = function() {
+  window.testUpdateCheck = function () {
     const workId = parseWorkId(window.location.href);
     if (!workId) {
       console.log('No work ID found in current URL');
@@ -1011,20 +1015,20 @@
   };
 
   // Enable/disable debug mode
-  window.enableAO3Debug = function() {
+  window.enableAO3Debug = function () {
     localStorage.setItem('ao3_debug', 'true');
     CONFIG.DEBUG = true;
     console.log('Debug mode enabled. Reload the page to see debug info.');
   };
 
-  window.disableAO3Debug = function() {
+  window.disableAO3Debug = function () {
     localStorage.removeItem('ao3_debug');
     CONFIG.DEBUG = false;
     console.log('Debug mode disabled.');
   };
 
   // Manual progress sync
-  window.syncBookmarks = async function() {
+  window.syncBookmarks = async function () {
     if (!window.ao3ProgressTracker) {
       console.log('No progress tracker active');
       return;

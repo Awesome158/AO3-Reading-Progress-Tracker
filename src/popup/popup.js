@@ -1,5 +1,5 @@
 // Popup script for AO3 Reading Progress Tracker
-(function() {
+(function () {
   'use strict';
 
   let worksData = [];

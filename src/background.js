@@ -249,7 +249,6 @@ function parseDeletionDelay(timing) {
   return value * (multipliers[unit] || 0);
 }
 
-// Fixed version using offscreen document for DOM parsing
 async function checkWorkForUpdates(wid, sendResponse) {
   console.log(`[AO3 Background] Checking work ${wid} for updates...`);
 
@@ -289,16 +288,17 @@ async function checkWorkForUpdates(wid, sendResponse) {
     console.log('[AO3 Background] Found work:', {
       wid: targetWork.wid,
       title: targetWork.title,
-      chapters: Object.keys(targetWork.chapters || {}).length
+      chapters: Object.keys(targetWork.chapters || {}).length,
+      availableChapters: targetWork.availableChapters
     });
 
-    // Construct URL for the work
-    const url = `https://archiveofourown.org/works/${wid}?view_adult=true`;
-    console.log(`[AO3 Background] Fetching work page: ${url}`);
+    // Use the /navigate endpoint for chapter list
+    const navigateUrl = `https://archiveofourown.org/works/${wid}/navigate`;
+    console.log(`[AO3 Background] Fetching chapter list: ${navigateUrl}`);
 
     try {
-      // Fetch the work page
-      const response = await fetch(url, {
+      // Fetch the navigate page
+      const response = await fetch(navigateUrl, {
         credentials: 'include',
         headers: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -312,40 +312,49 @@ async function checkWorkForUpdates(wid, sendResponse) {
 
       const html = await response.text();
 
-      // Parse HTML using regex (since DOMParser is not available in service workers)
+      // Parse HTML using regex
       const pageData = {
         title: '',
         availableChapters: 0,
-        totalChapters: null,
-        isWIP: true
+        chapterList: [],
+        lastUpdated: null
       };
 
-      // Extract title
-      const titleMatch = html.match(/<h2[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<\/h2>/);
+      // Extract title from the heading
+      const titleMatch = html.match(/<h2[^>]*class="[^"]*heading[^"]*"[^>]*>Chapter Index for <a[^>]*>([^<]+)<\/a>/);
       if (titleMatch) {
         pageData.title = titleMatch[1].trim();
       }
 
-      // Extract chapter count from stats
-      const chapterStatsMatch = html.match(/<dd[^>]*class="[^"]*chapters[^"]*"[^>]*>(\d+)\/(\d+|\?)<\/dd>/);
-      if (chapterStatsMatch) {
-        pageData.availableChapters = parseInt(chapterStatsMatch[1]);
-        if (chapterStatsMatch[2] === '?') {
-          pageData.totalChapters = null;
-          pageData.isWIP = true;
-        } else {
-          pageData.totalChapters = parseInt(chapterStatsMatch[2]);
-          pageData.isWIP = false;
-        }
-      } else {
-        // Fallback: try to count chapter links
-        const chapterLinks = html.match(/<option[^>]*value="[^"]*\/chapters\/\d+"/g);
-        if (chapterLinks) {
-          pageData.availableChapters = chapterLinks.length;
-        }
+      // Extract all chapters from the ordered list
+      const chapterRegex = /<li><a href="\/works\/\d+\/chapters\/(\d+)">([^<]+)<\/a>\s*<span[^>]*class="datetime"[^>]*>\(([^)]+)\)<\/span>/g;
+      let chapterMatch;
+
+      while ((chapterMatch = chapterRegex.exec(html)) !== null) {
+        const chapterId = chapterMatch[1];
+        const chapterTitle = chapterMatch[2].trim();
+        const dateStr = chapterMatch[3];
+
+        pageData.chapterList.push({
+          id: chapterId,
+          title: chapterTitle,
+          date: dateStr
+        });
       }
 
-      console.log(`[AO3 Background] Extracted data:`, pageData);
+      pageData.availableChapters = pageData.chapterList.length;
+
+      // Get the date of the last chapter as last updated
+      if (pageData.chapterList.length > 0) {
+        pageData.lastUpdated = pageData.chapterList[pageData.chapterList.length - 1].date;
+      }
+
+      console.log(`[AO3 Background] Extracted data:`, {
+        title: pageData.title,
+        availableChapters: pageData.availableChapters,
+        lastChapter: pageData.chapterList[pageData.chapterList.length - 1],
+        lastUpdated: pageData.lastUpdated
+      });
 
       // Check if there are any updates
       let hasUpdates = false;
@@ -359,9 +368,22 @@ async function checkWorkForUpdates(wid, sendResponse) {
       // Update the work data
       targetWork.title = pageData.title || targetWork.title;
       targetWork.availableChapters = pageData.availableChapters;
-      targetWork.totalChapters = pageData.totalChapters;
-      targetWork.isWIP = pageData.isWIP;
       targetWork.lastChecked = Date.now();
+      targetWork.lastUpdated = pageData.lastUpdated;
+
+      // Store chapter metadata if needed
+      if (!targetWork.chapterMetadata) {
+        targetWork.chapterMetadata = {};
+      }
+
+      pageData.chapterList.forEach(chapter => {
+        if (!targetWork.chapterMetadata[chapter.id]) {
+          targetWork.chapterMetadata[chapter.id] = {
+            title: chapter.title,
+            date: chapter.date
+          };
+        }
+      });
 
       // Save updated data
       lines[workIndex] = JSON.stringify(targetWork);
@@ -369,24 +391,25 @@ async function checkWorkForUpdates(wid, sendResponse) {
         ao3_progress: lines.join('\n')
       });
 
-      console.log(`[AO3 Background] Successfully updated work ${wid}: ${pageData.availableChapters}/${pageData.totalChapters || '?'} chapters`);
+      console.log(`[AO3 Background] Successfully updated work ${wid}: ${pageData.availableChapters} chapters`);
 
       sendResponse({
         success: true,
         updated: hasUpdates,
         hasNewChapters: hasUpdates,
         availableChapters: pageData.availableChapters,
-        totalChapters: pageData.totalChapters || '?',
-        title: pageData.title
+        title: pageData.title,
+        lastUpdated: pageData.lastUpdated,
+        chapterList: pageData.chapterList
       });
 
     } catch (fetchError) {
       console.error('[AO3 Background] Fetch error:', fetchError);
 
-      // Fallback: try using a tab
+      // Fallback: try using a tab to navigate
       try {
         const tab = await chrome.tabs.create({
-          url: url,
+          url: navigateUrl,
           active: false
         });
 
@@ -394,42 +417,60 @@ async function checkWorkForUpdates(wid, sendResponse) {
 
         // Wait for tab to load
         await new Promise(resolve => {
-          chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+          const listener = (tabId, info) => {
             if (tabId === tab.id && info.status === 'complete') {
               chrome.tabs.onUpdated.removeListener(listener);
               resolve();
             }
-          });
+          };
+          chrome.tabs.onUpdated.addListener(listener);
         });
 
         // Inject script to extract data
         const results = await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: () => {
-            const titleElement = document.querySelector('h2.title.heading');
-            const title = titleElement ? titleElement.textContent.trim() : '';
-
-            const chapterSelect = document.querySelector('#selected_id');
-            const availableChapters = chapterSelect ? chapterSelect.options.length : 0;
-
-            const statsElement = document.querySelector('dl.stats dd.chapters');
-            let totalChapters = null;
-            let isWIP = true;
-
-            if (statsElement) {
-              const statsText = statsElement.textContent.trim();
-              const match = statsText.match(/(\d+)\/(\d+|\?)/);
-              if (match) {
-                totalChapters = match[2] === '?' ? null : parseInt(match[2]);
-                isWIP = match[2] === '?';
+            // Extract title
+            const headingElement = document.querySelector('h2.heading');
+            let title = '';
+            if (headingElement) {
+              const titleLink = headingElement.querySelector('a');
+              if (titleLink) {
+                title = titleLink.textContent.trim();
               }
             }
 
+            // Extract chapters from the ordered list
+            const chapterList = [];
+            const chapterElements = document.querySelectorAll('ol.chapter.index li');
+
+            chapterElements.forEach(li => {
+              const link = li.querySelector('a');
+              const dateSpan = li.querySelector('span.datetime');
+
+              if (link && dateSpan) {
+                const href = link.getAttribute('href');
+                const chapterIdMatch = href.match(/\/chapters\/(\d+)/);
+
+                if (chapterIdMatch) {
+                  chapterList.push({
+                    id: chapterIdMatch[1],
+                    title: link.textContent.trim(),
+                    date: dateSpan.textContent.replace(/[()]/g, '').trim()
+                  });
+                }
+              }
+            });
+
+            const lastUpdated = chapterList.length > 0
+              ? chapterList[chapterList.length - 1].date
+              : null;
+
             return {
               title,
-              availableChapters,
-              totalChapters,
-              isWIP
+              availableChapters: chapterList.length,
+              chapterList,
+              lastUpdated
             };
           }
         });
@@ -451,9 +492,22 @@ async function checkWorkForUpdates(wid, sendResponse) {
           // Update work data
           targetWork.title = pageData.title || targetWork.title;
           targetWork.availableChapters = pageData.availableChapters;
-          targetWork.totalChapters = pageData.totalChapters;
-          targetWork.isWIP = pageData.isWIP;
           targetWork.lastChecked = Date.now();
+          targetWork.lastUpdated = pageData.lastUpdated;
+
+          // Store chapter metadata
+          if (!targetWork.chapterMetadata) {
+            targetWork.chapterMetadata = {};
+          }
+
+          pageData.chapterList.forEach(chapter => {
+            if (!targetWork.chapterMetadata[chapter.id]) {
+              targetWork.chapterMetadata[chapter.id] = {
+                title: chapter.title,
+                date: chapter.date
+              };
+            }
+          });
 
           // Save
           lines[workIndex] = JSON.stringify(targetWork);
@@ -466,8 +520,9 @@ async function checkWorkForUpdates(wid, sendResponse) {
             updated: hasUpdates,
             hasNewChapters: hasUpdates,
             availableChapters: pageData.availableChapters,
-            totalChapters: pageData.totalChapters || '?',
-            title: pageData.title
+            title: pageData.title,
+            lastUpdated: pageData.lastUpdated,
+            chapterList: pageData.chapterList
           });
         } else {
           throw new Error('No data extracted from tab');
@@ -517,25 +572,33 @@ async function checkAllWorksForUpdates() {
 
     // Only check works that are WIP or haven't been completed
     const worksToCheck = works.filter(work =>
-      work.isWIP || !work.completedAt
+      work.isWIP !== false && !work.completedAt
     );
 
     console.log(`[AO3 Background] Checking ${worksToCheck.length} works for updates`);
 
     let updatedCount = 0;
+    const updatedWorks = [];
 
     // Check each work (with delays to avoid hammering the server)
     for (let i = 0; i < worksToCheck.length; i++) {
       const work = worksToCheck[i];
 
       try {
-        const updated = await new Promise((resolve) => {
+        const response = await new Promise((resolve) => {
           checkWorkForUpdates(work.wid, (response) => {
-            resolve(response?.hasNewChapters || false);
+            resolve(response);
           });
         });
 
-        if (updated) updatedCount++;
+        if (response?.hasNewChapters) {
+          updatedCount++;
+          updatedWorks.push({
+            title: response.title || work.title,
+            wid: work.wid,
+            newChapters: response.availableChapters - (work.availableChapters || 0)
+          });
+        }
 
         // Wait 5 seconds between checks to be polite to AO3
         if (i < worksToCheck.length - 1) {
@@ -550,11 +613,21 @@ async function checkAllWorksForUpdates() {
 
     // Show notification if works were updated
     if (updatedCount > 0 && chrome.notifications) {
+      let message = `${updatedCount} work${updatedCount > 1 ? 's have' : ' has'} new chapters available!`;
+
+      // Add details for up to 3 works
+      if (updatedWorks.length <= 3) {
+        const details = updatedWorks.map(w =>
+          `• ${w.title} (+${w.newChapters} chapter${w.newChapters > 1 ? 's' : ''})`
+        ).join('\n');
+        message += '\n\n' + details;
+      }
+
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon-128.png',
         title: 'AO3 Reading Progress Tracker',
-        message: `${updatedCount} work${updatedCount > 1 ? 's have' : ' has'} new chapters available!`
+        message: message
       });
     }
   } catch (e) {
@@ -568,7 +641,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
   switch (alarm.name) {
     case 'cleanup':
-      handleCleanupCompleted(() => {});
+      handleCleanupCompleted(() => { });
       break;
 
     case 'checkChapterUpdates':
